@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Loader2, Lock, Mail, User, LogOut, Search, BarChart2, Calendar, Import as FileImport, Home } from 'lucide-react';
+import { Loader2, Lock, Mail, User, LogOut, Search, BarChart2, Calendar, Import as FileImport, Home, Ship } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import toast, { Toaster } from 'react-hot-toast';
 import { User as SupabaseUser } from '@supabase/supabase-js';
@@ -27,7 +27,7 @@ interface SearchVessel {
   arrival_date: string | null;
 }
 
-const App = () => {
+function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,41 +35,67 @@ const App = () => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [activeView, setActiveView] = useState<View>('home');
   const [selectedVesselId, setSelectedVesselId] = useState<string | null>(null);
+  const [searchResults, setSearchResults] = useState<SearchVessel[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [imoNumber, setImoNumber] = useState('');
 
-  // ✅ تحديث العنوان تلقائيًا عند تغيير الصفحة
   useEffect(() => {
-    document.title = 'نظام إدارة الناقلات البحرية';
-  }, []);
+    // ✅ تحديث العنوان عند تحميل الصفحة
+    document.title = "نظام إدارة الناقلات البحرية";
 
-  // ✅ تحديث حالة المستخدم عند تغيير الجلسة
-  useEffect(() => {
-    const fetchSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
-    };
-
-    fetchSession();
+    });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
 
-    return () => subscription?.unsubscribe();
+    return () => subscription.unsubscribe();
   }, []);
+
+  const handleSearch = () => {
+    if (!imoNumber.trim()) {
+      toast.error('الرجاء إدخال رقم IMO');
+      return;
+    }
+
+    if (!/^\d{7}$/.test(imoNumber)) {
+      toast.error('رقم IMO يجب أن يتكون من 7 أرقام');
+      return;
+    }
+
+    toast.success('جاري البحث عن السفينة...');
+  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const { error } = isSignUp
-        ? await supabase.auth.signUp({ email, password })
-        : await supabase.auth.signInWithPassword({ email, password });
-
-      if (error) throw new Error('البريد الإلكتروني أو كلمة المرور غير صحيحة');
-      toast.success(isSignUp ? 'تم إنشاء الحساب بنجاح!' : 'تم تسجيل الدخول بنجاح!');
-      
-      if (isSignUp) setIsSignUp(false);
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+        if (error) throw error;
+        toast.success('تم إنشاء حسابك بنجاح! يمكنك الآن تسجيل الدخول');
+        setIsSignUp(false);
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) {
+          if (error.message === 'Invalid login credentials') {
+            throw new Error('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+          }
+          throw error;
+        }
+        toast.success('تم تسجيل الدخول بنجاح!');
+      }
     } catch (error: any) {
       toast.error(error.message);
     } finally {
@@ -90,63 +116,212 @@ const App = () => {
         <p className="text-gray-600">نظام إدارة فسح الناقلات البحرية</p>
       </div>
       <div className="grid grid-cols-2 gap-6">
-        <button onClick={() => setActiveView('search')} className="btn-nav">
-          <Search className="icon-nav" /> <span>بحث</span>
+        <button
+          onClick={() => setActiveView('search')}
+          className="flex flex-col items-center justify-center bg-white p-2.5 rounded-lg shadow hover:bg-blue-50 transition-colors group"
+        >
+          <Search className="w-6 h-6 text-blue-600 mb-1.5 group-hover:scale-110 transition-transform" />
+          <span className="text-xs font-semibold text-gray-900">بحث</span>
         </button>
-        <button onClick={() => setActiveView('stats')} className="btn-nav">
-          <BarChart2 className="icon-nav" /> <span>إحصائيات</span>
+        <button
+          onClick={() => setActiveView('stats')}
+          className="flex flex-col items-center justify-center bg-white p-2.5 rounded-lg shadow hover:bg-blue-50 transition-colors group"
+        >
+          <BarChart2 className="w-6 h-6 text-blue-600 mb-1.5 group-hover:scale-110 transition-transform" />
+          <span className="text-xs font-semibold text-gray-900">إحصائيات</span>
         </button>
-        <button onClick={() => setActiveView('schedule')} className="btn-nav">
-          <Calendar className="icon-nav" /> <span>جدول العمل</span>
+        <button
+          onClick={() => setActiveView('schedule')}
+          className="flex flex-col items-center justify-center bg-white p-2.5 rounded-lg shadow hover:bg-blue-50 transition-colors group"
+        >
+          <Calendar className="w-6 h-6 text-blue-600 mb-1.5 group-hover:scale-110 transition-transform" />
+          <span className="text-xs font-semibold text-gray-900">جدول العمل</span>
         </button>
-        <button onClick={() => setActiveView('import')} className="btn-nav">
-          <FileImport className="icon-nav" /> <span>استيراد</span>
+        <button
+          onClick={() => setActiveView('import')}
+          className="flex flex-col items-center justify-center bg-white p-2.5 rounded-lg shadow hover:bg-blue-50 transition-colors group"
+        >
+          <FileImport className="w-6 h-6 text-blue-600 mb-1.5 group-hover:scale-110 transition-transform" />
+          <span className="text-xs font-semibold text-gray-900">استيراد</span>
         </button>
       </div>
     </div>
   );
 
-  return (
-    <div className="min-h-screen bg-[#f3f3f3]" dir="rtl">
-      {user ? (
-        <div className="max-w-6xl mx-auto px-4">
-          <nav className="bg-blue-600 shadow-md mb-6 p-2 flex justify-end gap-2 rounded-lg">
-            <button onClick={() => setActiveView('home')} className="btn-nav">
-              <Home className="icon-nav" /> الرئيسية
-            </button>
-            <button onClick={() => setActiveView('form')} className="btn-nav">إضافة</button>
-            <button onClick={() => setActiveView('waiting')} className="btn-nav">الانتظار</button>
-            <button onClick={() => setActiveView('arrived')} className="btn-nav">الوصول</button>
-            <button onClick={handleSignOut} className="btn-nav">
-              <LogOut className="icon-nav" /> تسجيل الخروج
-            </button>
+  if (user) {
+    return (
+      <div className="min-h-screen bg-[#f3f3f3]" dir="rtl">
+        <div className={`${activeView === 'search' ? 'px-0' : 'max-w-6xl mx-auto px-2 sm:px-4 md:px-6'}`}>
+          <nav className={`bg-blue-600 shadow-md mb-6 overflow-x-auto ${activeView === 'search' ? 'rounded-none' : 'rounded-lg'}`}>
+            <div className="flex items-center justify-end p-2 gap-1 sm:gap-2 min-w-max">
+              {activeView !== 'home' && (
+                <button
+                  onClick={() => setActiveView('home')}
+                  className="p-2 rounded-lg text-white hover:bg-blue-500 transition"
+                  title="الرئيسية"
+                >
+                  <Home className="w-5 h-5" />
+                </button>
+              )}
+              <button
+                onClick={() => setActiveView('form')}
+                className={`px-2 sm:px-4 py-2 rounded-lg transition text-sm sm:text-base whitespace-nowrap ${
+                  activeView === 'form'
+                    ? 'bg-white text-blue-600'
+                    : 'text-white hover:bg-blue-500'
+                }`}
+              >
+                إضافة
+              </button>
+              <button
+                onClick={() => setActiveView('waiting')}
+                className={`px-2 sm:px-4 py-2 rounded-lg transition text-sm sm:text-base whitespace-nowrap ${
+                  activeView === 'waiting'
+                    ? 'bg-white text-blue-600'
+                    : 'text-white hover:bg-blue-500'
+                }`}
+              >
+                الانتظار
+              </button>
+              <button
+                onClick={() => setActiveView('arrived')}
+                className={`px-2 sm:px-4 py-2 rounded-lg transition text-sm sm:text-base whitespace-nowrap ${
+                  activeView === 'arrived'
+                    ? 'bg-white text-blue-600'
+                    : 'text-white hover:bg-blue-500'
+                }`}
+              >
+                الوصول
+              </button>
+              <div className="h-6 w-px bg-blue-400 mx-1 sm:mx-2"></div>
+              <button
+                onClick={handleSignOut}
+                className="p-2 rounded-lg text-white hover:bg-blue-500 transition"
+                title="تسجيل الخروج"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
           </nav>
-
-          <div className="pb-6">
+          
+          <div className={activeView === 'search' ? '' : 'pb-6'}>
             {activeView === 'home' && renderHomeButtons()}
-            {activeView === 'form' && <VesselForm onSuccess={() => setActiveView('waiting')} />}
-            {activeView === 'waiting' && <WaitingList onArrivalSuccess={(vesselId) => setSelectedVesselId(vesselId)} />}
-            {activeView === 'arrived' && <ArrivalList selectedVesselId={selectedVesselId} />}
-            {activeView === 'search' && <MarineMap />}
+            {activeView === 'form' && (
+              <VesselForm onSuccess={() => setActiveView('waiting')} />
+            )}
+            {activeView === 'waiting' && (
+              <WaitingList 
+                onArrivalSuccess={(vesselId) => {
+                  setActiveView('arrived');
+                  setSelectedVesselId(vesselId);
+                }}
+              />
+            )}
+            {activeView === 'arrived' && (
+              <ArrivalList selectedVesselId={selectedVesselId} />
+            )}
+            {activeView === 'search' && (
+              <div className="h-[calc(100vh-56px)]">
+                <MarineMap />
+              </div>
+            )}
             {activeView === 'stats' && <Statistics />}
-            {activeView === 'schedule' && <Schedule />}
+            {activeView === 'schedule' && (
+              <div className="space-y-6">
+                <Schedule />
+              </div>
+            )}
             {activeView === 'import' && <ImportPage />}
           </div>
         </div>
-      ) : (
-        <div className="auth-container">
-          <Lock className="icon-lock" />
-          <h1>{isSignUp ? 'إنشاء حساب جديد' : 'تسجيل الدخول'}</h1>
-          <form onSubmit={handleAuth} className="auth-form">
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="البريد الإلكتروني" required />
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="كلمة المرور" required />
-            <button type="submit" disabled={isLoading}>{isLoading ? <Loader2 className="icon-spin" /> : isSignUp ? 'إنشاء حساب' : 'تسجيل الدخول'}</button>
-          </form>
+        <Toaster position="top-center" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#f3f3f3] flex items-center justify-center p-4" dir="rtl">
+      <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg w-full max-w-md">
+        <div className="text-center mb-8">
+          <Lock className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            {isSignUp ? 'إنشاء حساب جديد' : 'تسجيل الدخول'}
+          </h1>
+          <p className="text-gray-600">مرحباً بك في موقعنا</p>
         </div>
-      )}
+
+        <form onSubmit={handleAuth} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              البريد الإلكتروني
+            </label>
+            <div className="relative">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="block w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                placeholder="example@domain.com"
+                required
+                dir="ltr"
+              />
+              <Mail className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              كلمة المرور
+            </label>
+            <div className="relative">
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="block w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                placeholder="******"
+                required
+                dir="ltr"
+                minLength={6}
+              />
+              <User className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+            </div>
+            {isSignUp && (
+              <p className="mt-2 text-sm text-gray-500">
+                يجب أن تحتوي كلمة المرور على 6 أحرف على الأقل
+              </p>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition disabled:opacity-50"
+          >
+            {isLoading ? (
+              <Loader2 className="animate-spin h-5 w-5 mx-auto" />
+            ) : isSignUp ? (
+              'إنشاء حساب'
+            ) : (
+              'تسجيل الدخول'
+            )}
+          </button>
+        </form>
+
+        <div className="mt-6 text-center">
+          <button
+            onClick={() => setIsSignUp(!isSignUp)}
+            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+          >
+            {isSignUp
+              ? 'لديك حساب بالفعل؟ سجل دخولك'
+              : 'ليس لديك حساب؟ أنشئ حساباً جديداً'}
+          </button>
+        </div>
+      </div>
       <Toaster position="top-center" />
     </div>
   );
-};
+}
 
 export default App;
