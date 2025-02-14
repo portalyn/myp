@@ -10,6 +10,22 @@ import { Statistics } from './components/Statistics';
 import { Schedule } from './components/Schedule';
 import { MarineMap } from './components/MarineMap';
 import { ImportPage } from './components/ImportPage';
+import { useEffect } from 'react';
+
+function App() {
+  useEffect(() => {
+    document.title = "نظام إدارة الناقلات البحرية"; // ✨ اسم الموقع الجديد ✨
+  }, []);
+
+  return (
+    <div>
+      <h1>مرحباً بك في النظام</h1>
+    </div>
+  );
+}
+
+export default App;
+
 
 type View = 'home' | 'form' | 'waiting' | 'arrived' | 'search' | 'stats' | 'schedule' | 'import';
 
