@@ -49,7 +49,20 @@ export function Statistics() {
 
   useEffect(() => {
     fetchStatistics();
+  
+    // ✅ اشترك في تحديثات الجدول وتحديث الإحصائيات عند أي تغيير
+    const subscription = supabase
+      .channel('vessels')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'vessels' }, () => {
+        fetchStatistics();
+      })
+      .subscribe();
+  
+    return () => {
+      supabase.removeChannel(subscription);
+    };
   }, []);
+  
 
   const getMonthName = (month: number) => {
     const monthNames = [
@@ -72,23 +85,34 @@ export function Statistics() {
       const monthCounts = new Map<number, number>();
       const userCountMap = new Map<string, number>();
 
+vessels.forEach(vessel => {
+  if (vessel.entered_by) {
+    userCountMap.set(vessel.entered_by, (userCountMap.get(vessel.entered_by) || 0) + 1);
+  }
+});
+
+const userStats = Array.from(userCountMap.entries())
+  .map(([entered_by, count]) => ({ entered_by, count }))
+  .sort((a, b) => b.count - a.count);
+
+setUserCounts(userStats);
+
+      
+
       vessels.forEach(vessel => {
-        const date = new Date(vessel.arrival_date);
+        const date = new Date(vessel.arrival_date + 'T00:00:00Z'); // التعامل مع التوقيت UTC
+        date.setMinutes(date.getMinutes() + date.getTimezoneOffset()); // تعديل للتوقيت المحلي
+        
         const month = date.getMonth() + 1;
         monthCounts.set(month, (monthCounts.get(month) || 0) + 1);
-
-        if (vessel.entered_by) {
-          userCountMap.set(vessel.entered_by, (userCountMap.get(vessel.entered_by) || 0) + 1);
-        }
-      });
+    });
+    
 
       const monthlyStats = Array.from(monthCounts.entries())
         .map(([month, count]) => ({ month, count }))
         .sort((a, b) => a.month - b.month);
 
-      const userStats = Array.from(userCountMap.entries())
-        .map(([entered_by, count]) => ({ entered_by, count }))
-        .sort((a, b) => b.count - a.count);
+    
 
       setMonthlyData(monthlyStats);
       setUserCounts(userStats);
@@ -125,8 +149,9 @@ export function Statistics() {
 
   const fetchMonthlyVessels = async (month: number) => {
     try {
-      const startDate = new Date(new Date().getFullYear(), month - 1, 1).toISOString().split('T')[0];
-      const endDate = new Date(new Date().getFullYear(), month, 0).toISOString().split('T')[0];
+      const startDate = new Date(Date.UTC(new Date().getFullYear(), month - 1, 1)).toISOString().split('T')[0];
+const endDate = new Date(Date.UTC(new Date().getFullYear(), month, 0)).toISOString().split('T')[0];
+
 
       const { data, error } = await supabase
         .from('vessels')
