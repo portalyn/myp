@@ -81,116 +81,81 @@ export function ArrivalForm({ vessel, onClose, onSuccess }: ArrivalFormProps) {
     }));
   };
 
-  return (
-    <div className="bg-white rounded-xl shadow-lg p-4 md:p-8 w-full max-w-4xl mx-auto my-4">
-      <div className="flex items-center justify-between mb-6">
-        <Ship className="w-8 h-8 text-blue-600" />
-        <h2 className="text-2xl font-bold text-gray-900">تسجيل الوصول</h2>
-      </div>
 
-      <div className="mb-6 bg-gray-50 p-4 rounded-lg">
-        <h3 className="text-lg font-semibold mb-3">معلومات الناقلة</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <span className="block text-sm font-bold text-blue-700">اسم الناقلة</span>
-            <span className="text-blue-600">{vessel.vessel_name}</span>
-          </div>
-          <div>
-            <span className="block text-sm font-bold text-blue-700">العلم</span>
-            <span className="text-blue-600">{vessel.flag}</span>
-          </div>
-          <div>
-            <span className="block text-sm font-bold text-blue-700">قادمة من</span>
-            <span className="text-blue-600">{vessel.coming_from}</span>
-          </div>
-          <div>
-            <span className="block text-sm font-bold text-blue-700">متجهة إلى</span>
-            <span className="text-blue-600">{vessel.heading_to}</span>
-          </div>
-          <div>
-            <span className="block text-sm font-bold text-blue-700">الموعد</span>
-            <span className="text-blue-600">{vessel.appointment}</span>
-          </div>
-          <div>
-            <span className="block text-sm font-bold text-blue-700">الوكيل</span>
-            <span className="text-blue-600">{vessel.agent}</span>
-          </div>
+    return (
+      <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 w-full max-w-3xl mx-auto my-4 font-[Tajawal]">
+      {/* 🔹 العنوان */}
+      <div className="flex items-center justify-between mb-4 border-b pb-3">
+        <h2 className="text-xl font-bold text-[#1E3A8A] flex items-center gap-2">
+          <span>🔍 معلومات الناقلة</span>
+        </h2>
+      </div>
+    
+      {/* 🔹 معلومات الناقلة */}
+      <div className="mb-4 bg-gray-50 p-3 rounded-lg shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {[
+            { label: "اسم الناقلة", value: vessel.vessel_name },
+            { label: "العلم", value: vessel.flag },
+            { label: "قادمة من", value: vessel.coming_from },
+            { label: "متجهة إلى", value: vessel.heading_to },
+            { label: "الموعد", value: vessel.appointment },
+            { label: "الوكيل", value: vessel.agent }
+          ].map((item, index) => (
+            <div key={index} className="p-2 rounded-lg border bg-white shadow-sm hover:shadow-md transition duration-200">
+              <span className="block text-xs font-bold text-[#1E3A8A] mb-1">{item.label}</span>
+              <span className="text-sm font-semibold text-gray-800">{item.value}</span>
+            </div>
+          ))}
         </div>
       </div>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <label className="form-label">
-              المدخل
-            </label>
-            <input
-              type="text"
-              name="entered_by"
-              value={formData.entered_by}
-              onChange={handleChange}
-              required
-              className="form-input"
-              dir="rtl"
-              placeholder="أدخل اسم المدخل"
-            />
-          </div>
-
-          <div>
-            <label className="form-label">
-              تاريخ الوصول
-            </label>
-            <input
-              type="date"
-              name="arrival_date"
-              value={formData.arrival_date}
-              onChange={handleChange}
-              required
-              className="form-input"
-            />
-          </div>
-
-          <div>
-            <label className="form-label">
-              عدد الطاقم
-            </label>
-            <input
-              type="number"
-              name="crew_count"
-              value={formData.crew_count}
-              onChange={handleChange}
-              required
-              min="0"
-              className="form-input"
-              dir="rtl"
-            />
-          </div>
+    
+      {/* 🔹 نموذج الإدخال */}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {[
+            { name: "entered_by", label: "المدخل", type: "text", placeholder: "أدخل اسم المدخل", dir: "rtl" },
+            { name: "arrival_date", label: "تاريخ الوصول", type: "date", placeholder: "" },
+            { name: "crew_count", label: "عدد الطاقم", type: "number", placeholder: "", min: 0, dir: "rtl" }
+          ].map((field, index) => (
+            <div key={index}>
+              <label className="block text-xs font-bold text-[#1E3A8A] mb-1">{field.label}</label>
+              <input
+                type={field.type}
+                name={field.name}
+                value={formData[field.name]}
+                onChange={handleChange}
+                required
+                min={field.min}
+                dir={field.dir}
+                placeholder={field.placeholder}
+                className="w-full px-2 py-1 rounded-md border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-gray-800 text-sm shadow-sm transition"
+              />
+            </div>
+          ))}
         </div>
-
-        <div className="flex justify-end gap-4 mt-6">
+    
+        {/* 🔹 الأزرار */}
+        <div className="flex justify-end gap-3 mt-4">
           <button
             type="button"
             onClick={onClose}
-            className="px-6 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition"
+            className="px-4 py-1 rounded-md text-gray-700 border border-gray-300 text-sm hover:bg-gray-100 transition"
           >
             إلغاء
           </button>
           <button
             type="submit"
             disabled={isLoading}
-            className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition disabled:opacity-50"
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-1 rounded-md text-sm hover:bg-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:ring-offset-1 transition disabled:opacity-50"
           >
-            {isLoading ? (
-              <>جاري الحفظ...</>
-            ) : (
-              <>
-                <Save className="w-5 h-5" />
-                حفظ البيانات
-              </>
-            )}
+            {isLoading ? "جاري الحفظ..." : <><span className="material-icons"></span> حفظ البيانات</>}
           </button>
         </div>
       </form>
     </div>
-  );
-}
+    
+
+    );
+  }
+  
