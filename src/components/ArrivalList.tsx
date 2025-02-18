@@ -136,37 +136,31 @@ export function ArrivalList() {
 
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="py-3 px-2 text-right font-medium text-gray-500">الناقلة</th>
-                  <th className="py-3 px-2 text-right font-medium text-gray-500">تاريخ الوصول</th>
-                  <th className="py-3 px-2 text-right font-medium text-gray-500">المدخل</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {vessels.map((vessel) => (
-                  <tr
-                    key={vessel.id}
-                    onClick={() => setSelectedVessel(vessel)}
-                    className="hover:bg-gray-50 cursor-pointer transition-colors"
-                  >
-                    <td className="py-2 px-2 whitespace-nowrap font-semibold text-gray-900">
-                      {vessel.vessel_name}
-                    </td>
-                    <td className="py-2 px-2 whitespace-nowrap text-gray-600 text-xs" dir="ltr">
-                      {formatDate(vessel.arrival_date)}
-                    </td>
-                    <td className="py-2 px-2 whitespace-nowrap text-gray-600">{vessel.entered_by}</td>
-                  </tr>
-                ))}
-                {vessels.length === 0 && (
-                  <tr>
-                    <td colSpan={3} className="py-8 text-center text-gray-500">
-                      لا توجد ناقلات في قائمة الوصول
-                    </td>
-                  </tr>
-                )}
-              </tbody>
+            <thead className="bg-blue-100 text-blue-900">
+  <tr>
+    <th className="py-3 px-2 text-right font-bold">الناقلة</th>
+    <th className="py-3 px-2 text-right font-bold">تاريخ الوصول</th>
+    <th className="py-3 px-2 text-right font-bold">المدخل</th>
+  </tr>
+</thead>
+<tbody>
+  {vessels.map((vessel, index) => (
+    <tr
+      key={vessel.id}
+      onClick={() => setSelectedVessel(vessel)}
+      className={`cursor-pointer transition-colors ${
+        index % 2 === 0 ? "bg-gray-50" : "bg-white"
+      } hover:bg-gray-200`}
+    >
+      <td className="py-3 px-2 text-right font-semibold">{vessel.vessel_name}</td>
+      <td className="py-3 px-2 text-right font-semibold text-gray-600" dir="ltr">
+        {formatDate(vessel.arrival_date)}
+      </td>
+      <td className="py-3 px-2 text-right font-semibold text-gray-600">{vessel.entered_by}</td>
+    </tr>
+  ))}
+</tbody>
+
             </table>
           </div>
         </div>
