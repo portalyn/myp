@@ -191,46 +191,48 @@ export function Schedule() {
   </div>
 )}
 
-<table className="w-full text-sm mt-4 border-collapse border rounded-lg shadow-lg">
-  <thead className="bg-gray-200 text-gray-900">
-    <tr>
-      <th className="px-4 py-2">#</th>
-      <th className="px-4 py-2">اليوم</th>
-      <th className="px-4 py-2">التاريخ الميلادي</th>
-      <th className="px-4 py-2">التاريخ الهجري</th>
-      <th className="px-4 py-2">المناوب</th>
-    </tr>
-  </thead>
-  <tbody>
-    {shifts.map((shift, index) => {
-      const shiftDate = new Date(shift.date);
-      const hijriDate = toHijri(
-        shiftDate.getFullYear(),
-        shiftDate.getMonth() + 1,
-        shiftDate.getDate()
-      );
-      const dayName = shiftDate.toLocaleDateString("ar-SA", { weekday: "long" });
-      const isWeekend = dayName === "الجمعة" || dayName === "السبت";
+<div className="overflow-x-auto">
+  <table className="w-full text-xs md:text-sm mt-4 border-collapse border rounded-lg shadow-lg">
+    <thead className="bg-gray-200 text-gray-900">
+      <tr>
+        <th className="px-2 py-2 w-8">#</th>
+        <th className="px-2 py-2 w-20 md:w-auto">اليوم</th>
+        <th className="px-2 py-2 whitespace-nowrap">التاريخ الميلادي</th>
+        <th className="px-2 py-2 whitespace-nowrap">التاريخ الهجري</th>
+        <th className="px-2 py-2">المناوب</th>
+      </tr>
+    </thead>
+    <tbody>
+      {shifts.map((shift, index) => {
+        const shiftDate = new Date(shift.date);
+        const hijriDate = toHijri(
+          shiftDate.getFullYear(),
+          shiftDate.getMonth() + 1,
+          shiftDate.getDate()
+        );
+        const dayName = shiftDate.toLocaleDateString("ar-SA", { weekday: "long" });
+        const isWeekend = dayName === "الجمعة" || dayName === "السبت";
 
-      return (
-        <tr
-          key={index}
-          className={`border ${
-            isWeekend ? "bg-yellow-100" : index % 2 === 0 ? "bg-gray-50" : "bg-white"
-          } text-gray-800`}
-        >
-          <td className="px-4 py-2 text-center font-semibold">{index + 1}</td>
-          <td className="px-4 py-2 text-center">{dayName}</td>
-          <td className="px-4 py-2 text-center">{shift.date}</td>
-          <td className="px-4 py-2 text-center">{`${hijriDate.hy}-${hijriDate.hm}-${hijriDate.hd}`}</td>
-          <td className="px-4 py-2 text-center font-semibold text-blue-900">
-            {shift.employee}
-          </td>
-        </tr>
-      );
-    })}
-  </tbody>
-</table>
+        return (
+          <tr
+            key={index}
+            className={`border ${
+              isWeekend ? "bg-yellow-100" : index % 2 === 0 ? "bg-gray-50" : "bg-white"
+            } text-gray-800`}
+          >
+            <td className="px-2 py-2 text-center font-semibold">{index + 1}</td>
+            <td className="px-2 py-2 text-center">{dayName}</td>
+            <td className="px-2 py-2 text-center whitespace-nowrap">{shift.date}</td>
+            <td className="px-2 py-2 text-center whitespace-nowrap">{`${hijriDate.hy}-${hijriDate.hm}-${hijriDate.hd}`}</td>
+            <td className="px-2 py-2 text-center font-semibold text-blue-900">
+              {shift.employee}
+            </td>
+          </tr>
+        );
+      })}
+    </tbody>
+  </table>
+</div>
 
       </div>
     </div>
