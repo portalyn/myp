@@ -102,85 +102,76 @@ export function ArrivalList({ selectedVesselId }: ArrivalListProps) {
                 <th className="py-3 px-2 text-right font-medium text-gray-500">المدخل</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">{vessels.length === 0 ? (
-              <tr>
-                <td colSpan={3} className="py-8 text-center text-gray-500">
-                  لا توجد ناقلات في قائمة الوصول
-                </td>
-              </tr>
-            ) : (
-              vessels.map((vessel) => (
-                <React.Fragment key={vessel.id}>
-                  <tr
-                    onClick={() => setSelectedId(selectedId === vessel.id ? null : vessel.id)}
-                    className={`hover:bg-gray-50 cursor-pointer transition-colors ${
-                      selectedId === vessel.id ? 'bg-blue-50' : ''
-                    }`}
-                  >
-                    <td className="py-2 px-2 whitespace-nowrap">{vessel.vessel_name}</td>
-                    <td className="py-2 px-2 whitespace-nowrap text-gray-500 text-xs" dir="ltr">
-                      {formatDate(vessel.arrival_date)}
-                    </td>
-                    <td className="py-2 px-2 whitespace-nowrap text-gray-500">{vessel.entered_by}</td>
-                  </tr>
-                  {selectedId === vessel.id && (
-                    <tr>
-                      <td colSpan={3} className="px-2 py-4 bg-gray-50">
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                              <span className="block text-sm font-bold text-blue-700">العلم</span>
-                              <span className="text-blue-600">{vessel.flag}</span>
-                            </div>
-                            <div>
-                              <span className="block text-sm font-bold text-blue-700">قادمة من</span>
-                              <span className="text-blue-600">{vessel.coming_from}</span>
-                            </div>
-                            <div>
-                              <span className="block text-sm font-bold text-blue-700">متجهة إلى</span>
-                              <span className="text-blue-600">{vessel.heading_to}</span>
-                            </div>
-                            <div>
-                              <span className="block text-sm font-bold text-blue-700">عدد الطاقم</span>
-                              <span className="text-blue-600">{vessel.crew_count}</span>
-                            </div>
-                            {vessel.passenger_count !== null && (
-                              <div>
-                                <span className="block text-sm font-bold text-blue-700">عدد الركاب</span>
-                                <span className="text-blue-600">{vessel.passenger_count}</span>
-                              </div>
-                            )}
-                            {vessel.pilgrim_count !== null && (
-                              <div>
-                                <span className="block text-sm font-bold text-blue-700">عدد المعتمرين</span>
-                                <span className="text-blue-600">{vessel.pilgrim_count}</span>
-                              </div>
-                            )}
-                            <div>
-                              <span className="block text-sm font-bold text-blue-700">الموعد</span>
-                              <span className="text-blue-600" dir="ltr">{formatDate(vessel.appointment)}</span>
-                            </div>
-                            <div>
-                              <span className="block text-sm font-bold text-blue-700">الوكيل</span>
-                              <span className="text-blue-600">{vessel.agent}</span>
-                            </div>
-                          </div>
-                          <div className="flex justify-end">
-                            <button
-                              onClick={() => handleCopyDetails(vessel)}
-                              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                            >
-                              <Copy className="w-4 h-4" />
-                              نسخ التفاصيل
-                            </button>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              ))
-            )}</tbody>
+            <tbody className="divide-y divide-gray-200">
+  {vessels.length === 0 ? (
+    <tr>
+      <td colSpan={3} className="py-8 text-center text-gray-500">
+        لا توجد ناقلات في قائمة الوصول
+      </td>
+    </tr>
+  ) : (
+    vessels.map((vessel) => (
+      <React.Fragment key={vessel.id}>
+        {/* 🔹 صف الناقلة الأساسية */}
+        <tr
+          onClick={() => setSelectedId(selectedId === vessel.id ? null : vessel.id)}
+          className={`hover:bg-gray-50 cursor-pointer transition-colors ${
+            selectedId === vessel.id ? "bg-blue-50" : ""
+          }`}
+        >
+          <td className="py-2 px-2 whitespace-nowrap font-semibold text-gray-900">
+            {vessel.vessel_name}
+          </td>
+          <td className="py-2 px-2 whitespace-nowrap text-gray-600 text-xs" dir="ltr">
+            {formatDate(vessel.arrival_date)}
+          </td>
+          <td className="py-2 px-2 whitespace-nowrap text-gray-600">{vessel.entered_by}</td>
+        </tr>
+
+        {/* 🔹 تفاصيل الناقلة عند التوسيع */}
+        {selectedId === vessel.id && (
+          <tr>
+            <td colSpan={3} className="px-2 py-4 bg-gray-50">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {[
+                  { label: "العلم", value: vessel.flag },
+                  { label: "قادمة من", value: vessel.coming_from },
+                  { label: "متجهة إلى", value: vessel.heading_to },
+                  { label: "عدد الطاقم", value: vessel.crew_count },
+                  vessel.passenger_count !== null && { label: "عدد الركاب", value: vessel.passenger_count },
+                  vessel.pilgrim_count !== null && { label: "عدد المعتمرين", value: vessel.pilgrim_count },
+                  { label: "الموعد", value: formatDate(vessel.appointment), dir: "ltr" },
+                  { label: "الوكيل", value: vessel.agent },
+                ]
+                  .filter(Boolean)
+                  .map((item, index) => (
+                    <div key={index} className="p-3 bg-white border border-gray-200 rounded-md shadow-sm">
+                      <span className="block font-bold text-[15px] text-[#1E3A8A]">{item.label}</span>
+                      <span className="text-[15px] font-semibold text-gray-900" dir={item.dir}>
+                        {item.value}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+
+              {/* 🔹 زر النسخ */}
+              <div className="flex justify-end mt-3">
+                <button
+                  onClick={() => handleCopyDetails(vessel)}
+                  className="flex items-center gap-2 px-3 py-[7px] bg-blue-600 text-white rounded-md text-[14px] hover:bg-blue-700 transition"
+                >
+                  <Copy className="w-4 h-4" />
+                  نسخ التفاصيل
+                </button>
+              </div>
+            </td>
+          </tr>
+        )}
+      </React.Fragment>
+    ))
+  )}
+</tbody>
+
           </table>
         </div>
       </div>
