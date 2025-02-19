@@ -61,7 +61,9 @@ export function ArrivalForm({ vessel, onClose, onSuccess }: ArrivalFormProps) {
 الطاقم: ${formData.crew_count}
 التاريخ: ${formData.arrival_date}`;
 
-     
+      // Copy to clipboard
+      await navigator.clipboard.writeText(clipboardText);
+      toast.success('تم نسخ البيانات إلى الحافظة');
 
       toast.success('تم تسجيل الوصول بنجاح');
       onSuccess(vessel.id);
