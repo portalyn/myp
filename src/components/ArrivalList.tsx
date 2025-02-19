@@ -18,7 +18,11 @@ interface Vessel {
   pilgrim_count: number | null;
 }
 
-export function ArrivalList() {
+interface ArrivalListProps {
+  selectedVesselId?: string | null; // ✅ استقبال الـ selectedVesselId من App.tsx
+}
+
+export function ArrivalList({ selectedVesselId }: ArrivalListProps) {
   const [vessels, setVessels] = useState<Vessel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedVessel, setSelectedVessel] = useState<Vessel | null>(null);
@@ -26,6 +30,13 @@ export function ArrivalList() {
   useEffect(() => {
     fetchVessels();
   }, []);
+
+  useEffect(() => {
+    if (selectedVesselId) {
+      const vessel = vessels.find((v) => v.id === selectedVesselId);
+      if (vessel) setSelectedVessel(vessel); // ✅ فتح تفاصيل الناقلة مباشرة
+    }
+  }, [selectedVesselId, vessels]);
 
   const fetchVessels = async () => {
     try {
@@ -38,7 +49,6 @@ export function ArrivalList() {
       if (error) throw error;
       setVessels(data || []);
     } catch (error: any) {
-      console.error('Error fetching vessels:', error);
       toast.error(handleSupabaseError(error));
     } finally {
       setIsLoading(false);
@@ -59,7 +69,7 @@ export function ArrivalList() {
 الناقلة: ${vessel.vessel_name}
 العلم: ${vessel.flag}
 قادمة من: ${vessel.coming_from}
-متجهه الى: ${vessel.heading_to}
+متجهة الى: ${vessel.heading_to}
 الطاقم: ${vessel.crew_count}${vessel.passenger_count ? `\nالركاب: ${vessel.passenger_count}` : ''}${vessel.pilgrim_count ? `\nالمعتمرين: ${vessel.pilgrim_count}` : ''}
 التاريخ: ${formatDate(vessel.arrival_date)}`;
 
@@ -79,9 +89,7 @@ export function ArrivalList() {
   return (
     <div className="space-y-6">
       {selectedVessel ? (
-        // ✅ عندما يتم تحديد ناقلة، يتم عرض هذا النموذج بدلاً من الجدول
         <div className="bg-white rounded-xl shadow-lg p-6 relative max-w-3xl mx-auto">
-          {/* 🔹 زر إغلاق النموذج */}
           <button
             onClick={() => setSelectedVessel(null)}
             className="absolute top-3 left-3 text-gray-600 hover:text-red-600"
@@ -115,7 +123,6 @@ export function ArrivalList() {
               ))}
           </div>
 
-          {/* 🔹 زر النسخ */}
           <div className="flex justify-end mt-5">
             <button
               onClick={() => handleCopyDetails(selectedVessel)}
@@ -127,7 +134,6 @@ export function ArrivalList() {
           </div>
         </div>
       ) : (
-        // ✅ الجدول يظهر فقط إذا لم يتم تحديد ناقلة
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="flex items-center justify-between p-4 border-b">
             <Ship className="w-6 h-6 text-blue-600" />
@@ -136,31 +142,30 @@ export function ArrivalList() {
 
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-            <thead className="bg-blue-100 text-blue-900">
-  <tr>
-    <th className="py-3 px-2 text-right font-bold">الناقلة</th>
-    <th className="py-3 px-2 text-right font-bold">تاريخ الوصول</th>
-    <th className="py-3 px-2 text-right font-bold">المدخل</th>
-  </tr>
-</thead>
-<tbody>
-  {vessels.map((vessel, index) => (
-    <tr
-      key={vessel.id}
-      onClick={() => setSelectedVessel(vessel)}
-      className={`cursor-pointer transition-colors ${
-        index % 2 === 0 ? "bg-gray-50" : "bg-white"
-      } hover:bg-gray-200`}
-    >
-      <td className="py-3 px-2 text-right font-semibold">{vessel.vessel_name}</td>
-      <td className="py-3 px-2 text-right font-semibold text-gray-600" dir="ltr">
-        {formatDate(vessel.arrival_date)}
-      </td>
-      <td className="py-3 px-2 text-right font-semibold text-gray-600">{vessel.entered_by}</td>
-    </tr>
-  ))}
-</tbody>
-
+              <thead className="bg-blue-100 text-blue-900">
+                <tr>
+                  <th className="py-3 px-2 text-right font-bold">الناقلة</th>
+                  <th className="py-3 px-2 text-right font-bold">تاريخ الوصول</th>
+                  <th className="py-3 px-2 text-right font-bold">المدخل</th>
+                </tr>
+              </thead>
+              <tbody>
+                {vessels.map((vessel, index) => (
+                  <tr
+                    key={vessel.id}
+                    onClick={() => setSelectedVessel(vessel)}
+                    className={`cursor-pointer transition-colors ${
+                      index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                    } hover:bg-gray-200`}
+                  >
+                    <td className="py-3 px-2 text-right font-semibold">{vessel.vessel_name}</td>
+                    <td className="py-3 px-2 text-right font-semibold text-gray-600" dir="ltr">
+                      {formatDate(vessel.arrival_date)}
+                    </td>
+                    <td className="py-3 px-2 text-right font-semibold text-gray-600">{vessel.entered_by}</td>
+                  </tr>
+                ))}
+              </tbody>
             </table>
           </div>
         </div>

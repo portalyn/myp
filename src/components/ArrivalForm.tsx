@@ -66,7 +66,12 @@ export function ArrivalForm({ vessel, onClose, onSuccess }: ArrivalFormProps) {
       toast.success('تم نسخ البيانات إلى الحافظة');
 
       toast.success('تم تسجيل الوصول بنجاح');
-      onSuccess(vessel.id);
+
+      // 🔹 بعد الحفظ، انتقل إلى قائمة الوصول مع تحديد الناقلة
+      setTimeout(() => {
+        onSuccess(vessel.id); // تأكيد نجاح العملية
+      }, 300); // تأخير بسيط لتجنب الأخطاء المحتملة
+      
     } catch (error: any) {
       toast.error(handleSupabaseError(error));
     } finally {

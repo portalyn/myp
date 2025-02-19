@@ -209,14 +209,19 @@ function App() {
             {activeView === 'form' && (
               <VesselForm onSuccess={() => setActiveView('waiting')} />
             )}
-            {activeView === 'waiting' && (
-              <WaitingList 
-                onArrivalSuccess={(vesselId) => {
-                  setActiveView('arrived');
-                  setSelectedVesselId(vesselId);
-                }}
-              />
-            )}
+{activeView === 'waiting' && (
+  <WaitingList 
+  onArrivalSuccess={(vesselId) => {
+    setSelectedVesselId(null); // إعادة التهيئة
+    setTimeout(() => {
+      setSelectedVesselId(vesselId); // تحديد الناقلة المدخلة حديثًا
+      setActiveView('arrived');
+    }, 100); // تأخير بسيط للسماح بتحديث الحالة
+  }}
+/>
+)}
+
+
             {activeView === 'arrived' && (
               <ArrivalList selectedVesselId={selectedVesselId} />
             )}
