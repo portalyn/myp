@@ -48,7 +48,12 @@ export function WaitingList({ onArrivalSuccess }: WaitingListProps) {
       setIsLoading(false);
     }
   };
-
+  const handleCopy = () => {
+    navigator.clipboard.writeText("Test Data")
+      .then(() => toast.success("تم النسخ بنجاح!"))
+      .catch(() => toast.error("حدث خطأ أثناء النسخ"));
+  };
+  
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-GB', {
