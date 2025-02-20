@@ -42,9 +42,11 @@ export function VesselForm({ onSuccess }: VesselFormProps) {
       if (error) throw error;
 
       toast.success('تم حفظ بيانات الناقلة بنجاح');
-setTimeout(() => {
-  onSuccess(); // الانتقال بعد تأخير قصير
-}, 300); // تأخير لمدة 300 مللي ثانية
+      setTimeout(() => {
+        window.scrollTo(0, 1); // 🔥 إجبار Safari على إعادة الرسم
+        onSuccess(); 
+      }, 300);
+      
 
       setFormData({
         vesselName: '',
