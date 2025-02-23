@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase, handleSupabaseError } from '../lib/supabase';
 import { Ship } from 'lucide-react';
 import { ArrivalForm } from './ArrivalForm';
@@ -14,6 +14,7 @@ interface Vessel {
   appointment: string;
   agent: string;
   entered_by: string | null;
+  arrival_date: string | null;
   updated_at: string;
 }
 

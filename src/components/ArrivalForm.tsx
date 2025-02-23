@@ -37,9 +37,9 @@ export function ArrivalForm({ vessel, onClose, onSuccess }: ArrivalFormProps) {
       toast.error('يرجى إدخال اسم المدخل');
       return;
     }
-
+  
     setIsLoading(true);
-
+  
     try {
       const { error } = await supabase
         .from('vessels')
@@ -49,28 +49,15 @@ export function ArrivalForm({ vessel, onClose, onSuccess }: ArrivalFormProps) {
           arrival_date: formData.arrival_date
         })
         .eq('id', vessel.id);
-
+  
       if (error) throw error;
-
-      // Format the text for clipboard
-      const clipboardText = `تم الفسح
-الناقلة: ${vessel.vessel_name}
-العلم: ${vessel.flag}
-قادمة من: ${vessel.coming_from}
-متجهه الى: ${vessel.heading_to}
-الطاقم: ${formData.crew_count}
-التاريخ: ${formData.arrival_date}`;
-
-      // Copy to clipboard
-      await navigator.clipboard.writeText(clipboardText);
-      toast.success('تم نسخ البيانات إلى الحافظة');
-
+  
       toast.success('تم تسجيل الوصول بنجاح');
-
+  
       // 🔹 بعد الحفظ، انتقل إلى قائمة الوصول مع تحديد الناقلة
       setTimeout(() => {
-        onSuccess(vessel.id); // تأكيد نجاح العملية
-      }, 300); // تأخير بسيط لتجنب الأخطاء المحتملة
+        onSuccess(vessel.id); // تأكيد نجاح العملية وفتح تفاصيل الناقلة
+      }, 100); // تأخير بسيط لتجنب الأخطاء المحتملة
       
     } catch (error: any) {
       toast.error(handleSupabaseError(error));
@@ -78,6 +65,7 @@ export function ArrivalForm({ vessel, onClose, onSuccess }: ArrivalFormProps) {
       setIsLoading(false);
     }
   };
+  
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
